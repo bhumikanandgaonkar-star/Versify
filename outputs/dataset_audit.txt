@@ -1,0 +1,61 @@
+VERSIFY DATASET AUDIT
+========================================
+Rows: 1000
+Columns: 24
+Exact duplicate lyric rows: 613
+Unique lyric texts: 387
+
+Missing values:
+ID                               0
+Song Name                        0
+Movie/Album                      0
+Year                           151
+Singer                           0
+Lyricist                         0
+Composer                         0
+Primary Mood                     0
+Secondary Mood                   0
+Intensity                        0
+Theme                            0
+Situation                        0
+Genre                            0
+Energy Level                     0
+Song Structure                   0
+Lyrics (Full, Section-wise)      0
+Language                         0
+Script Format                    0
+Word Count                       0
+User_query_Tags                  0
+Lyrics_Keywords                  0
+Source URL                       0
+Confidence                       0
+Split (Train/Val/Test)           0
+
+
+Emotion distribution:
+Primary Mood
+Love            286
+Sad             108
+Nostalgic        84
+Happy            79
+Party            78
+Devotional       75
+Peaceful         75
+Motivational     73
+Thoughtful       71
+Inspiring        71
+
+
+Original split distribution:
+Split (Train/Val/Test)
+Train         808
+Test           96
+Validation     71
+Val            25
+
+
+Standardized split distribution:
+Split (Train/Val/Test)
+train         808
+validation     96
+test           96
