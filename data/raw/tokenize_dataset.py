@@ -10,7 +10,7 @@ OUTPUT_DIR = Path("data/processed")
 OUTPUT_CSV = OUTPUT_DIR / "versify_tokenized.csv"
 VOCAB_JSON = OUTPUT_DIR / "versify_vocab.json"
 
-LYRICS_COL = "Lyrics (Full, Section-wise)"
+LYRICS_COL = "Lyrics"
 MOOD_COL = "Primary Mood"
 
 # Keeps section markers, English/Hindi words, and numbers as tokens.

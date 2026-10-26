@@ -6,26 +6,31 @@ import joblib
 from sklearn.feature_extraction.text import TfidfVectorizer
 from scipy.sparse import save_npz
 
+# Input and output paths
 INPUT_PATH = Path("data/processed/versify_tokenized.csv")
 OUTPUT_DIR = Path("data/features/tfidf_trial")
 
-TEXT_COL = "Lyrics (Full, Section-wise)"
+# Dataset columns
+TEXT_COL = "Lyrics"
 MOOD_COL = "Primary Mood"
 SPLIT_COL = "Split (Train/Val/Test)"
 
+
 def main():
+    # Load dataset
     df = pd.read_csv(INPUT_PATH, encoding="utf-8-sig")
 
-    # Check required fields.
-    required = [TEXT_COL, MOOD_COL, SPLIT_COL]
+    # Validate required columns
+    required = [TEXT_COL, MOOD_COL, SPLIT_COL, "ID"]
     missing = [col for col in required if col not in df.columns]
+
     if missing:
         raise ValueError(f"Missing columns: {missing}")
 
+    # Prepare text and split labels
     df[TEXT_COL] = df[TEXT_COL].fillna("").astype(str)
-    df[SPLIT_COL] = df[SPLIT_COL].str.strip().str.lower()
+    df[SPLIT_COL] = df[SPLIT_COL].astype(str).str.strip().str.lower()
 
-    # Use only known split names.
     split_map = {
         "train": "train",
         "val": "validation",
@@ -33,21 +38,26 @@ def main():
         "validation": "validation",
         "test": "test",
     }
+
     df[SPLIT_COL] = df[SPLIT_COL].map(split_map)
 
     if df[SPLIT_COL].isna().any():
         raise ValueError("Unknown split label found.")
 
-    train = df[df[SPLIT_COL] == "train"]
-    validation = df[df[SPLIT_COL] == "validation"]
-    test = df[df[SPLIT_COL] == "test"]
+    # Separate the datasets
+    train = df[df[SPLIT_COL] == "train"].copy()
+    validation = df[df[SPLIT_COL] == "validation"].copy()
+    test = df[df[SPLIT_COL] == "test"].copy()
 
     if train.empty or validation.empty or test.empty:
-        raise ValueError("Train, validation, and test splits must all be non-empty.")
+        raise ValueError(
+            "Train, validation, and test splits must all be non-empty."
+        )
 
+    # Create output directory
     OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
 
-    # Word-level TF-IDF: unigrams and bigrams.
+    # Word-level TF-IDF: unigrams and bigrams
     word_vectorizer = TfidfVectorizer(
         lowercase=True,
         ngram_range=(1, 2),
@@ -63,9 +73,13 @@ def main():
     save_npz(OUTPUT_DIR / "word_train.npz", X_train_word)
     save_npz(OUTPUT_DIR / "word_validation.npz", X_val_word)
     save_npz(OUTPUT_DIR / "word_test.npz", X_test_word)
-    joblib.dump(word_vectorizer, OUTPUT_DIR / "word_vectorizer.joblib")
 
-    # Character-level TF-IDF.
+    joblib.dump(
+        word_vectorizer,
+        OUTPUT_DIR / "word_vectorizer.joblib"
+    )
+
+    # Character-level TF-IDF: character sequences of length 3 to 5
     char_vectorizer = TfidfVectorizer(
         analyzer="char",
         ngram_range=(3, 5),
@@ -81,9 +95,13 @@ def main():
     save_npz(OUTPUT_DIR / "char_train.npz", X_train_char)
     save_npz(OUTPUT_DIR / "char_validation.npz", X_val_char)
     save_npz(OUTPUT_DIR / "char_test.npz", X_test_char)
-    joblib.dump(char_vectorizer, OUTPUT_DIR / "char_vectorizer.joblib")
 
-    # Keep labels and record IDs aligned with each matrix's row order.
+    joblib.dump(
+        char_vectorizer,
+        OUTPUT_DIR / "char_vectorizer.joblib"
+    )
+
+    # Save labels and IDs in matching row order
     for split_name, split_df in [
         ("train", train),
         ("validation", validation),
@@ -95,8 +113,14 @@ def main():
             encoding="utf-8-sig",
         )
 
+    # Display report
     print("\nVERSIFY FEATURE EXTRACTION REPORT")
     print("=" * 40)
+
+    print("\nDataset sizes:")
+    print("Training records:", len(train))
+    print("Validation records:", len(validation))
+    print("Test records:", len(test))
 
     print("\nWord-level TF-IDF:")
     print("Train matrix:", X_train_word.shape)
@@ -108,7 +132,9 @@ def main():
     print("Validation matrix:", X_val_char.shape)
     print("Test matrix:", X_test_char.shape)
 
-    print("\nOutput directory:", OUTPUT_DIR)
+    print("\nOutput directory:", OUTPUT_DIR.resolve())
+    print("\nFeature extraction completed successfully.")
+
 
 if __name__ == "__main__":
     main()
